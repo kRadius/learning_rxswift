@@ -32,11 +32,18 @@
 
 import UIKit
 import Photos
+import RxSwift
 
 class PhotosViewController: UICollectionViewController {
 
   // MARK: public properties
-
+  private let selectedPhotosSubject = PublishSubject<UIImage>()
+  // 为什么要暴露这个? 其实为了只读
+  public var selectedPhotos : Observable<UIImage> {
+    return selectedPhotosSubject.asObservable()
+  }
+  
+  
   // MARK: private properties
   private lazy var photos = PhotosViewController.loadPhotos()
   private lazy var imageManager = PHCachingImageManager()
@@ -61,7 +68,7 @@ class PhotosViewController: UICollectionViewController {
 
   override func viewWillDisappear(_ animated: Bool) {
     super.viewWillDisappear(animated)
-
+    selectedPhotosSubject.onCompleted()
   }
 
   // MARK: UICollectionView
@@ -94,7 +101,9 @@ class PhotosViewController: UICollectionViewController {
 
     imageManager.requestImage(for: asset, targetSize: view.frame.size, contentMode: .aspectFill, options: nil, resultHandler: { [weak self] image, info in
       guard let image = image, let info = info else { return }
-      
+      if let isThumbnail = info[PHImageResultIsDegradedKey as String] as? Bool, !isThumbnail {        
+        self?.selectedPhotosSubject.onNext(image)
+      }
     })
   }
 }
