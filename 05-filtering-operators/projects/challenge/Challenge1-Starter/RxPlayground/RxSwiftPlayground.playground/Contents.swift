@@ -30,7 +30,24 @@ example(of: "Challenge 1") {
   let input = PublishSubject<Int>()
   
   // Add your code here
-  
+    input.skipWhile { $0 != 0 }
+        .filter { $0 < 10}
+        .take(10)
+        .toArray()
+        .subscribe(
+            onSuccess: { x in
+                let phone = phoneNumber(from: x)
+
+                if let contact = contacts[phone] {
+                  print("Dialing \(contact) (\(phone))...")
+                } else {
+                  print("Contact not found")
+                }
+            }, onError: { error in
+                print(error)
+            }
+        )
+        .disposed(by: disposeBag)
   
   input.onNext(0)
   input.onNext(603)
