@@ -70,7 +70,7 @@ example(of: "elementAt") {
     strikes.onNext("Z")
 //    strikes.onCompleted()
 }
-
+//  filter 在这里，是筛选的意思。 不是过滤掉
 example(of: "fileter") {
     let disposeBag = DisposeBag()
     

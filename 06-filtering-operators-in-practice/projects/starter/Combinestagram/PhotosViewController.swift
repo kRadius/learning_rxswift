@@ -43,7 +43,8 @@ class PhotosViewController: UICollectionViewController {
 
   // MARK: private properties
   private let selectedPhotosSubject = PublishSubject<UIImage>()
-
+  private let disposeBag = DisposeBag()
+  
   private lazy var photos = PhotosViewController.loadPhotos()
   private lazy var imageManager = PHCachingImageManager()
 
@@ -58,11 +59,49 @@ class PhotosViewController: UICollectionViewController {
     allPhotosOptions.sortDescriptors = [NSSortDescriptor(key: "creationDate", ascending: true)]
     return PHAsset.fetchAssets(with: allPhotosOptions)
   }
-
+  // MARK: - Private Method
+  private func errorMessage() {
+    alert(title: "No access to Camera Roll",
+      text: "You can grant access to Combinestagram from the Settings app")
+      .asObservable()
+      .take(.seconds(5), scheduler: MainScheduler.instance)
+      .subscribe(onCompleted: { [weak self] in
+        self?.dismiss(animated: true, completion: nil)
+        _ = self?.navigationController?.popViewController(animated: true)
+      })
+      .disposed(by: disposeBag)
+  }
+  
   // MARK: View Controller
   override func viewDidLoad() {
     super.viewDidLoad()
-
+    let authorized = PHPhotoLibrary.authorized.share()
+    // 请求
+    authorized
+      .skipWhile { !$0 } //忽略 false
+      .take(1)
+      .subscribe(onNext: { [weak self] _ in
+        self?.photos = PhotosViewController.loadPhotos()
+        DispatchQueue.main.async {
+          self?.collectionView?.reloadData()
+        }
+      })
+      .disposed(by: disposeBag)
+    
+    // 错误展示
+    // 这里为什么要 skip(1), 然后 takeLast(1)? 因为在处理错误的时候， 初始的状态都是不对的，因为不管怎么着，都要去 requestAuthorized 一下
+    authorized
+      .skip(1)
+      .takeLast(1)
+      .skipWhile { $0 } //忽略 true, 或者使用 .fileter { !$0 }
+      .subscribe(onNext: {[weak self] _ in
+        guard let errorMessage = self?.errorMessage else {
+          return
+        }
+        DispatchQueue.main.async(execute: errorMessage)
+      })
+      .disposed(by: disposeBag)
+      
   }
 
   override func viewWillDisappear(_ animated: Bool) {

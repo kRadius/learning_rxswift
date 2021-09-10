@@ -40,13 +40,15 @@ class MainViewController: UIViewController {
   @IBOutlet weak var buttonClear: UIButton!
   @IBOutlet weak var buttonSave: UIButton!
   @IBOutlet weak var itemAdd: UIBarButtonItem!
-
+  
   private let bag = DisposeBag()
+  // 这个其实是个不好的解决方案，因为额外引入了状态变量。 如果能自己收敛到 rx 的操作里就好
+  private var imageCache = [Int]()
   private let images = BehaviorRelay<[UIImage]>(value: [])
 
   override func viewDidLoad() {
     super.viewDidLoad()
-
+    
     images
       .subscribe(onNext: { [weak imagePreview] photos in
         guard let preview = imagePreview else { return }
@@ -64,6 +66,7 @@ class MainViewController: UIViewController {
   
   @IBAction func actionClear() {
     images.accept([])
+    imageCache = []
   }
 
   @IBAction func actionSave() {
@@ -89,18 +92,59 @@ class MainViewController: UIViewController {
       withIdentifier: "PhotosViewController") as! PhotosViewController
 
     navigationController!.pushViewController(photosViewController, animated: true)
-
-    photosViewController.selectedPhotos
+    // 不会创建一个新的订阅
+    // 如果其他地方有同样的订阅， 那么其他的地方不会执行
+    let newPhotos = photosViewController.selectedPhotos.share()
+    newPhotos
+      // 在选择页面也要限制 6 张
+      .takeWhile { [weak self] image in
+        let count = self?.images.value.count ?? 0
+        return count < 6
+      }
+      //
+      .filter { [weak self] image in
+        let len = image.pngData()?.count ?? 0
+        guard self?.imageCache.contains(len) == false else {
+          return false
+        }
+        self?.imageCache.append(len)
+        return true
+      }
+      // 过滤掉 portriat 以及已经存在的
+      .filter {image in
+        
+        return image.size.width > image.size.height
+      }
+      // 避免点的很快
+      .throttle(.milliseconds(500), scheduler: MainScheduler.instance)
       .subscribe(
         onNext: { [weak self] newImage in
           guard let images = self?.images else { return }
           images.accept(images.value + [newImage])
+        },
+        onCompleted: { [weak self] in
+          // 等同于 ignoreElements().subscribe?
+          self?.updateNavigationIcon()
         },
         onDisposed: {
           print("completed photo selection")
         }
       )
       .disposed(by: bag)
+    
+//    newPhotos
+//      .ignoreElements()
+//      .subscribe { [weak self] in
+//        self?.updateNavigationIcon()
+//      } onError: { error in
+//
+//      }
+//      .disposed(by: bag)
+  }
+  
+  func updateNavigationIcon() {
+    let icon = imagePreview.image?.scaled(CGSize(width: 22, height: 22)).withRenderingMode(.alwaysOriginal)
+    navigationItem.leftBarButtonItem = UIBarButtonItem(image: icon, style: .done, target: nil, action: nil)
   }
 
   func showMessage(_ title: String, description: String? = nil) {
