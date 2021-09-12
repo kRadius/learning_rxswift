@@ -110,7 +110,7 @@ example(of: "flattenMap") {
     
     
     student
-        .debug()
+//        .debug()
         .flatMap { student in
             // 这里为什么连打印语句都不能写？？？？
             return student.score
@@ -313,7 +313,7 @@ example(of: "Challenge 1") {
     
     // Add your code here
     input.asObservable()
-        .debug()
+//        .debug()
         .map { convert($0) }
         .filter { $0 != nil}
         .map { $0! }
