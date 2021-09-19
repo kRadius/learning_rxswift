@@ -13,6 +13,7 @@
 		3D46E62F1E258DFC0090C97B /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 3D46E62E1E258DFC0090C97B /* Assets.xcassets */; };
 		3D46E6321E258DFC0090C97B /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 3D46E6301E258DFC0090C97B /* LaunchScreen.storyboard */; };
 		80F5E6D80898AE82F1C3F522 /* Pods_OurPlanet.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 1EF04E44D9FB61A65604F317 /* Pods_OurPlanet.framework */; };
+		85EA61EB26F6DB64007D45CE /* Download.swift in Sources */ = {isa = PBXBuildFile; fileRef = 85EA61EA26F6DB64007D45CE /* Download.swift */; };
 		D8D4B3B53FB9DBEFD316986D /* EventCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = D8D4B590E2532FBB4E15A320 /* EventCell.swift */; };
 		D8D4B48C386519868A7FCF37 /* EOLocation.swift in Sources */ = {isa = PBXBuildFile; fileRef = D8D4B8B9345BB7B3111B3486 /* EOLocation.swift */; };
 		D8D4B551A4A3EC7D24280B22 /* EOEnvelope.swift in Sources */ = {isa = PBXBuildFile; fileRef = D8D4B8EF2AD93009A46E705B /* EOEnvelope.swift */; };
@@ -34,6 +35,7 @@
 		3D46E62E1E258DFC0090C97B /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		3D46E6311E258DFC0090C97B /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/LaunchScreen.storyboard; sourceTree = "<group>"; };
 		3D46E6331E258DFC0090C97B /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		85EA61EA26F6DB64007D45CE /* Download.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Download.swift; sourceTree = "<group>"; };
 		D8D4B16B4BA42E13E4F7DBB2 /* EOCategory.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = EOCategory.swift; sourceTree = "<group>"; };
 		D8D4B1AF36E540D16E9AC066 /* EventsViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = EventsViewController.swift; sourceTree = "<group>"; };
 		D8D4B590E2532FBB4E15A320 /* EventCell.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = EventCell.swift; sourceTree = "<group>"; };
@@ -88,6 +90,7 @@
 				3D46E6301E258DFC0090C97B /* LaunchScreen.storyboard */,
 				3D46E6331E258DFC0090C97B /* Info.plist */,
 				D8D4B8DAB960CC6D73230C61 /* Model */,
+				85EA61EA26F6DB64007D45CE /* Download.swift */,
 			);
 			path = OurPlanet;
 			sourceTree = "<group>";
@@ -106,7 +109,6 @@
 				33FD31FBB5A8074AED33F8C0 /* Pods-OurPlanet.debug.xcconfig */,
 				3C7B09A3B9656142757AE986 /* Pods-OurPlanet.release.xcconfig */,
 			);
-			name = Pods;
 			path = Pods;
 			sourceTree = "<group>";
 		};
@@ -247,6 +249,7 @@
 			files = (
 				3D46E62A1E258DFC0090C97B /* CategoriesViewController.swift in Sources */,
 				3D46E6281E258DFC0090C97B /* AppDelegate.swift in Sources */,
+				85EA61EB26F6DB64007D45CE /* Download.swift in Sources */,
 				D8D4B93D3B0419880A462D8C /* EventsViewController.swift in Sources */,
 				D8D4B3B53FB9DBEFD316986D /* EventCell.swift in Sources */,
 				D8D4B8E35C10E832C1CFE0B0 /* EOCategory.swift in Sources */,
