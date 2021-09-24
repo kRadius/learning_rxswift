@@ -46,13 +46,18 @@ class ListPeopleViewModel {
   let list: ListIdentifier
   let apiType: TwitterAPIProtocol.Type
 
+  // Note：“It’s good practice (but certainly not the only way) to clearly define three sections in your view model code:”
+    
   // MARK: - Input
+  // 输入的属性
   let account: Driver<TwitterAccount.AccountStatus>
-
+  
   // MARK: - Output
+  // 输出的属性，一般都是给 tableview/ collection 用的 datasource
   let people = BehaviorRelay<[User]?>(value: nil)
 
   // MARK: - Init
+  // 注入所有需要的依赖
   init(account: Driver<TwitterAccount.AccountStatus>,
        list: ListIdentifier,
        apiType: TwitterAPIProtocol.Type = TwitterAPI.self) {

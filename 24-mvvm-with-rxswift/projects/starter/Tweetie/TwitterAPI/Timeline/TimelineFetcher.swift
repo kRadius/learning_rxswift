@@ -39,6 +39,7 @@ import RxRealm
 import RealmSwift
 import Reachability
 import Unbox
+///“The class TimelineFetcher in TimelineFetcher.swift is responsible to automatically refetch the latest tweets while the app is connected”
 
 class TimelineFetcher {
 
@@ -62,7 +63,8 @@ class TimelineFetcher {
   convenience init(account: Driver<TwitterAccount.AccountStatus>, username: String, apiType: TwitterAPIProtocol.Type) {
     self.init(account: account, jsonProvider: apiType.timeline(of: username))
   }
-
+  // 这个 jsonprovier 其实是给 flatMapLatest 用的。
+  // 上面不同的 convenience 是暴露给不同的 API 请求调用的，这样避免了在 init 方法里 做 if else
   private init(account: Driver<TwitterAccount.AccountStatus>,
                jsonProvider: @escaping (AccessToken, TimelineCursor) -> Observable<[JSONObject]>) {
     //
@@ -86,6 +88,8 @@ class TimelineFetcher {
 
     // timer that emits a reachable logged account
     let reachableTimerWithAccount = Observable.combineLatest(
+      // 定时触发拉取的任务
+      // 所以结构上， viewModel 负责逻辑，发起网络请求的 Fetecher + TwitterAPI
       Observable<Int>.timer(.seconds(0), period: .seconds(timerDelay), scheduler: MainScheduler.instance),
       Reachability.rx.reachable,
       currentAccount,
@@ -99,11 +103,23 @@ class TimelineFetcher {
     let feedCursor = BehaviorRelay<TimelineCursor>(value: .none)
 
     // Re-fetch the timeline
-
-    timeline = Observable<[Tweet]>.empty()
+    // 以 reachableTimerWithAccount（r） 为基准，当 r emit 的时候，看一下 from（x） x 最新的是啥
+    // 这里的意思是：每次可以触发请求时候，检查一下 feedCursor 最新的什么
+    // 为什么不能用 combineLatest？因为优先级问题吧，要时刻以 r 为准。combineLatest 是双方任意一方 emit 都能触发
+    timeline = reachableTimerWithAccount.withLatestFrom(feedCursor.asObservable()) { account, cursor in
+      return (account: account, cursor: cursor)
+    }
+    .flatMapLatest(jsonProvider)
+    .map(Tweet.unboxMany)
+    .share(replay: 1)
 
     // Store the latest position through timeline
-
+    // 每次 timeline 请求回来了，记录一下 cursor
+    timeline.scan(.none) { cursor, tweets in
+      TimelineFetcher.currentCursor(lastCursor: cursor, tweets: tweets)
+    }
+    .bind(to: feedCursor)
+    .disposed(by: bag)
   }
 
   static func currentCursor(lastCursor: TimelineCursor, tweets: [Tweet]) -> TimelineCursor {

@@ -33,6 +33,7 @@
 import UIKit
 import RxSwift
 import RxCocoa
+import RxTimelane
 
 class MainViewController: UIViewController {
 
@@ -50,6 +51,7 @@ class MainViewController: UIViewController {
     super.viewDidLoad()
 
     images
+      .lane("Photos")
       .throttle(.milliseconds(500), scheduler: MainScheduler.instance)
       .subscribe(onNext: { [weak imagePreview] photos in
         guard let preview = imagePreview else { return }
@@ -95,6 +97,7 @@ class MainViewController: UIViewController {
     navigationController!.pushViewController(photosViewController, animated: true)
 
     let newPhotos = photosViewController.selectedPhotos
+      .lane("New photos")
       .share()
     
     newPhotos

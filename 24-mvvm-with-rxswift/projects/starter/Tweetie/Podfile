@@ -1,5 +1,6 @@
 use_frameworks!
-source 'https://cdn.cocoapods.org'
+# source 'https://cdn.cocoapods.org'
+source 'https://mirrors.tuna.tsinghua.edu.cn/git/CocoaPods/Specs.git'
 inhibit_all_warnings!
 
 abstract_target 'TweetieAbstract' do

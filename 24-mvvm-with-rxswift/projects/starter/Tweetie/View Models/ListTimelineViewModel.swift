@@ -42,8 +42,14 @@ class ListTimelineViewModel {
   private let fetcher: TimelineFetcher
 
   // MARK: - Input
-
+  var paused: Bool =  false {
+    didSet {
+      fetcher.paused.accept(paused)
+    }
+  }
   // MARK: - Output
+  private(set) var tweets: Observable<(AnyRealmCollection<Tweet>, RealmChangeset?)>!
+  private(set) var loggedIn: Driver<Bool>!
 
   // MARK: - Init
   init(account: Driver<TwitterAccount.AccountStatus>,
