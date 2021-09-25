@@ -64,7 +64,11 @@ class ListPeopleViewController: UIViewController {
       .disposed(by: bag)
 
     //show message when no account available
-
+//    “First open ListPeopleViewController.swift in the iOS part of the project. In bindUI(), subscribe to viewModel.people, convert it to a Driver and map the elements to true and false. Emit false when viewModel.people is nil. Drive messageView.rx.isHidden with the resulting Driver<Bool>.”
+    viewModel.people.asDriver()
+      .map { $0 != nil }
+      .drive(messageView.rx.isHidden)
+      .disposed(by: bag)
   }
 }
 

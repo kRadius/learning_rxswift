@@ -40,6 +40,9 @@ import RxCocoa
 class ListTimelineViewModel {
   private let bag = DisposeBag()
   private let fetcher: TimelineFetcher
+  
+  let list: ListIdentifier
+  let account: Driver<TwitterAccount.AccountStatus>
 
   // MARK: - Input
   var paused: Bool =  false {
@@ -48,24 +51,49 @@ class ListTimelineViewModel {
     }
   }
   // MARK: - Output
+  
   private(set) var tweets: Observable<(AnyRealmCollection<Tweet>, RealmChangeset?)>!
+
   private(set) var loggedIn: Driver<Bool>!
 
   // MARK: - Init
   init(account: Driver<TwitterAccount.AccountStatus>,
        list: ListIdentifier,
        apiType: TwitterAPIProtocol.Type = TwitterAPI.self) {
-
+    self.list = list
+    self.account = account
     // fetch and store tweets
     fetcher = TimelineFetcher(account: account, list: list, apiType: apiType)
     bindOutput()
-
+    // 初始化的时候先把 fetcher 网络请求，绑定到了本地的 realm
+    // 然后在 output 里， 把realm bind 到输出？
+    fetcher.timeline
+      // 这叫 bind？
+      .subscribe(Realm.rx.add(update: .all))
+      .disposed(by: bag)
+    
   }
 
   // MARK: - Methods
   private func bindOutput() {
     // Bind tweets
+    guard let realm = try? Realm() else {
+      return
+    }
+    //
+    tweets = Observable.changeset(from: realm.objects(Tweet.self))
 
     // Bind if an account is available
+    
+    loggedIn = account
+      .map{ status -> Bool in
+        switch status {
+        case .unavailable: return false
+        case .authorized: return true
+        }
+      }
+      // account 本来不是已经是 driver 了，为啥还要 asDriver
+      .asDriver(onErrorJustReturn: false)
+    
   }
 }

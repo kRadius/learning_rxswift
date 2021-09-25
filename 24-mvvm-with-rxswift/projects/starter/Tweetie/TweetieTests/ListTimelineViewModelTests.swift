@@ -74,5 +74,28 @@ class ListTimelineViewModelTests: XCTestCase {
     let emitted = try! result!.toBlocking(timeout: 1).first()!
     XCTAssertTrue(emitted.0.count == 3)
   }
+  
+  func test_whenAccountAvailable_updatesAccountStatus() {
+    enum MyError: Error {
+      case anError
+    }
+    let accountSubject = PublishSubject<TwitterAccount.AccountStatus>()
+    let viewModel = createViewModel(accountSubject.asDriver(onErrorJustReturn: .unavailable))
+    // 其实这里 materialize 与否都无所谓，只是改变了一下输出的值，以及避免了 error 发生时候，让 PublishSubject 变的 terminate
+    let login = viewModel.loggedIn.asObservable().materialize()
+    
+    DispatchQueue.main.async {
+      accountSubject.onNext(.authorized(AccessToken()))
+      accountSubject.onNext(.unavailable)
+      accountSubject.onError(MyError.anError)
+      accountSubject.onCompleted()
+    }
+    
+    let emited = try! login.toBlocking(timeout: 1).toArray()
+    
+    XCTAssertEqual(emited[0].element, true)
+    XCTAssertEqual(emited[1].element, false)
+    XCTAssertTrue(emited[2].isCompleted)
+  }
 
 }
